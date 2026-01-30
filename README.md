@@ -46,4 +46,32 @@ The project uses modern web technologies and Artificial Intelligence to provide 
 ---
 
 ## 🏗️ Project Structure
+agri-doc/
+│
+├── index.html
+├── README.md
+└── assets/
+
+
+---
+
+## 🎯 Use Case
+
+- Farmers seeking quick plant disease diagnosis
+- Students building AI-based agriculture projects
+- Academic mini or major project submission
+
+---
+
+## 🔐 Security Note
+
+API keys should be stored securely and should not be exposed in public repositories.  
+For production use, backend integration is recommended.
+
+---
+
+## 👨‍💻 Developed By
+
+**Praveen Kumar**  
+College Project – AI & Web Development
 
