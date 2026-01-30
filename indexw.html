@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri Doctor - Plant Disease Identifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hidden {
+            display: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+         @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+        /* Leaflet map container height */
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-green-50 text-gray-800">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl">
+        <header class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M2 22s5-3.5 13-3.5C22 18.5 22 2 13 2 4 2 2 18.5 2 22z"></path><path d="M15 12a3 3 0 0 0-6 0"></path></svg>
+                <h1 class="text-4xl sm:text-5xl font-bold text-green-800">Agri Doctor</h1>
+            </div>
+            <p class="text-green-700 text-lg">Your AI-powered plant health assistant.</p>
+        </header>
+
+        <main>
+            <div id="homePage" class="text-center animate-fade-in">
+                <h2 class="text-3xl sm:text-4xl font-bold text-green-800 mb-4">Healthy Plants, Bountiful Harvests</h2>
+                <p class="text-lg text-green-700 max-w-3xl mx-auto mb-10">Get AI-driven disease diagnosis, crop suggestions, market prices, and find local suppliers to ensure a successful yield.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 text-left">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-green-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-green-600 mb-4"><path d="M4 12.9a9 9 0 0 0 9 9 9 9 0 0 0 9-9.1C22 7.7 16.5 2 12 2S2 7.7 2 12.9Z"></path><path d="M10 16s.5-1 2-1 2 1 2 1"></path><path d="m9 10 1.5 1.5"></path><path d="m14.5 11.5 1.5-1.5"></path></svg>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Disease Diagnosis</h3>
+                        <p class="text-gray-600">Snap a photo to identify plant diseases and get treatment guides.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-green-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-green-600 mb-4"><path d="M21.7 10.3c.1-.8-.5-1.6-1.3-1.7l-4.5-.5c-.7-.1-1.3-.6-1.6-1.2L12.9 3c-.4-.9-1.5-.9-1.9 0l-1.4 4.1c-.3.6-.9 1.1-1.6 1.2l-4.5.5c-.8.1-1.4.9-1.3 1.7l1 4.5c.2.7.7 1.3 1.3 1.6l3.8 2.2c.6.4 1 1.1 1 1.8v4.2c0 .9.9 1.5 1.7 1.1l4-2.5c.6-.4 1-1.1 1-1.8v-3.7c0-.7.4-1.4 1-1.8l3.8-2.2c.6-.3 1.1-.9 1.3-1.6l1-4.5z"></path></svg>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Crop Suggestion</h3>
+                        <p class="text-gray-600">Get crop recommendations based on your location's climate.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md border border-green-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-green-600 mb-4"><line x1="12" x2="12" y1="20" y2="10"></line><line x1="18" x2="18" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="16"></line></svg>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Market Prices</h3>
+                        <p class="text-gray-600">View local crop prices with easy-to-read charts.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md border border-green-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-green-600 mb-4"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Find Local Shops</h3>
+                        <p class="text-gray-600">Locate nearby fertilizer and agricultural supply shops.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                     <button id="goToIdentifier" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                        Diagnose Plant
+                    </button>
+                     <button id="goToSuggester" class="bg-white text-green-700 border-2 border-green-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                        Suggest Crop
+                    </button>
+                     <button id="goToPrices" class="bg-white text-green-700 border-2 border-green-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                        Check Prices
+                    </button>
+                     <button id="goToMap" class="bg-white text-green-700 border-2 border-green-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                        Find Shops
+                    </button>
+                </div>
+            </div>
+
+            <div id="identifierPage" class="hidden">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-8 animate-fade-in relative">
+                    <button class="backToHome absolute top-4 left-4 text-green-600 hover:text-green-800 flex items-center gap-2 font-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Home
+                    </button>
+                    <div class="space-y-6 pt-8">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-2 text-center">1. Provide Plant Details</h2>
+                        <div>
+                            <label for="plantName" class="block text-md font-medium text-gray-600 mb-2">Plant Name</label>
+                            <input type="text" id="plantName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition" placeholder="e.g., Tomato, Rose, etc.">
+                        </div>
+                        <div>
+                            <label for="issueDescription" class="block text-md font-medium text-gray-600 mb-2">Describe the Issue (optional)</label>
+                            <textarea id="issueDescription" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition" placeholder="e.g., Yellow spots on leaves, wilting stems..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-600 mb-2">Upload an Image</label>
+                            <div id="imageUploadBox" class="border-4 border-dashed border-green-200 rounded-xl p-8 cursor-pointer hover:border-green-400 transition-colors duration-300 bg-green-50 text-center">
+                                <input type="file" id="fileInput" class="hidden" accept="image/*">
+                                <div id="uploadPlaceholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4 text-green-700"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    <p class="font-semibold">Click to upload an image</p>
+                                    <p class="text-sm text-gray-500">PNG, JPG, or WEBP</p>
+                                </div>
+                                <img id="imagePreview" src="" alt="Plant preview" class="hidden mx-auto rounded-lg shadow-md max-h-64">
+                            </div>
+                        </div>
+                        <p id="identifierError" class="text-red-500 mt-2 text-center hidden"></p>
+                    </div>
+                    <div class="text-center">
+                      <button id="identifyDiseaseBtn" disabled class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                        Identify Disease
+                      </button>
+                    </div>
+                    <div id="identifierLoader" class="hidden"></div>
+                    <div id="identifierResult" class="hidden"></div>
+                </div>
+            </div>
+
+            <div id="suggesterPage" class="hidden">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-8 animate-fade-in relative">
+                    <button class="backToHome absolute top-4 left-4 text-green-600 hover:text-green-800 flex items-center gap-2 font-semibold">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Home
+                    </button>
+                    <div class="space-y-6 pt-8 text-center">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-2">Crop Development Recommendation</h2>
+                        <p class="text-gray-600 max-w-xl mx-auto">Select your location to receive AI-powered crop suggestions tailored to the region's climate.</p>
+                        <div class="max-w-md mx-auto space-y-4">
+                            <div>
+                                <label for="stateSelect" class="block text-md font-medium text-gray-600 mb-2 text-left">State</label>
+                                <div class="flex items-center gap-2 p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    <select id="stateSelect" class="w-full bg-transparent focus:outline-none"></select>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="districtSelect" class="block text-md font-medium text-gray-600 mb-2 text-left">District</label>
+                                 <div class="flex items-center gap-2 p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    <select id="districtSelect" class="w-full bg-transparent focus:outline-none"></select>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="text-center pt-4">
+                            <button id="getSuggestionsBtn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                                Get Suggestions
+                            </button>
+                        </div>
+                        <p id="suggesterError" class="text-red-500 mt-2 text-center hidden"></p>
+                    </div>
+                    <div id="suggesterLoader" class="hidden"></div>
+                    <div id="suggesterResult" class="hidden"></div>
+                </div>
+            </div>
+
+             <div id="pricesPage" class="hidden">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-8 animate-fade-in relative">
+                    <button class="backToHome absolute top-4 left-4 text-green-600 hover:text-green-800 flex items-center gap-2 font-semibold">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Home
+                    </button>
+                    <div class="space-y-6 pt-8 text-center">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-2">Local Crop Market Prices</h2>
+                        <p class="text-gray-600 max-w-xl mx-auto">Select your location to get the latest approximate market prices for major crops in your area.</p>
+                        <div class="max-w-md mx-auto space-y-4" id="pricesLocationSelector">
+                            </div>
+                         <div class="text-center pt-4">
+                            <button id="getPricesBtn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                                Get Market Prices
+                            </button>
+                        </div>
+                        <p id="pricesError" class="text-red-500 mt-2 text-center hidden"></p>
+                    </div>
+                    <div id="pricesLoader" class="hidden"></div>
+                    <div id="pricesResult" class="hidden">
+                        <h2 id="pricesResultTitle" class="text-2xl font-semibold text-gray-700 mb-4 text-center"></h2>
+                        <div class="bg-green-50/50 rounded-xl p-4 border border-green-200">
+                            <canvas id="priceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="mapPage" class="hidden">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fade-in relative">
+                    <button class="backToHome absolute top-4 left-4 text-green-600 hover:text-green-800 flex items-center gap-2 font-semibold z-10 bg-white/80 px-3 py-1 rounded-full shadow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Home
+                    </button>
+                    <div class="text-center pt-8">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-2">Find Nearby Fertilizer Shops</h2>
+                        <p class="text-gray-600 max-w-xl mx-auto">Search for a location or use your current location to find suppliers.</p>
+                    </div>
+                    <form id="mapSearchForm" class="relative flex items-center max-w-lg mx-auto z-10">
+                        <input id="mapSearchInput" type="text" placeholder="Search for a city or address in India..." class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </form>
+                    <div class="relative w-full h-96 rounded-xl overflow-hidden shadow-lg border z-0">
+                         <div id="map"></div>
+                         <div id="mapStatus" class="absolute bottom-2 left-2 bg-white/80 p-2 rounded-md shadow text-sm text-gray-700 z-10">Initializing map...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-8">
+          </footer>
+    </div>
+
+    <button id="chatbotToggleBtn" class="fixed bottom-5 right-5 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-transform transform hover:scale-110 z-40">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+
+    <div id="chatbotContainer" class="hidden fixed bottom-20 right-5 w-80 h-96 bg-white rounded-xl shadow-2xl flex flex-col animate-fade-in-up z-50">
+        <header class="bg-green-600 text-white p-3 rounded-t-xl flex justify-between items-center">
+            <h3 class="font-bold text-lg">Agri Assistant</h3>
+            <button id="closeChatbotBtn" class="hover:bg-green-700 p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </header>
+        <div class="p-2">
+             <select id="languageSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option value="English">English</option>
+                <option value="Hindi">हिन्दी (Hindi)</option>
+                <option value="Tamil">தமிழ் (Tamil)</option>
+                <option value="Telugu">తెలుగు (Telugu)</option>
+                <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+                <option value="Marathi">मराठी (Marathi)</option>
+            </select>
+        </div>
+        <div id="chatBody" class="flex-1 p-4 overflow-y-auto">
+             <div class="mb-3 flex justify-start">
+                <div class="rounded-lg px-3 py-2 max-w-xs bg-gray-200 text-gray-800">Hello! How can I help you today? Please select your language.</div>
+            </div>
+        </div>
+        <form id="chatForm" class="p-3 border-t flex items-center">
+            <input id="chatInput" type="text" placeholder="Ask something..." class="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button type="submit" id="chatSubmitBtn" class="ml-2 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 disabled:bg-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        const locations = {
+          "Andaman and Nicobar Islands": ["Nicobar", "North and Middle Andaman", "South Andaman"],
+          "Andhra Pradesh": ["Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Sri Potti Sriramulu Nellore", "Srikakulam", "Visakhapatnam", "Vizianagaram", "West Godavari", "Y.S.R. Kadapa"],
+          "Arunachal Pradesh": ["Anjaw", "Changlang", "Dibang Valley", "East Kameng", "East Siang", "Kamle", "Kra Daadi", "Kurung Kumey", "Lepa Rada", "Lohit", "Longding", "Lower Dibang Valley", "Lower Siang", "Lower Subansiri", "Namsai", "Pakke Kessang", "Papum Pare", "Shi Yomi", "Siang", "Tawang", "Tirap", "Upper Siang", "Upper Subansiri", "West Kameng", "West Siang"],
+          "Assam": ["Baksa", "Barpeta", "Biswanath", "Bongaigaon", "Cachar", "Charaideo", "Chirang", "Darrang", "Dhemaji", "Dhubri", "Dibrugarh", "Dima Hasao", "Goalpara", "Golaghat", "Hailakandi", "Hojai", "Jorhat", "Kamrup", "Kamrup Metropolitan", "Karbi Anglong", "Karimganj", "Kokrajhar", "Lakhimpur", "Majuli", "Morigaon", "Nagaon", "Nalbari", "Sivasagar", "Sonitpur", "South Salmara-Mankachar", "Tinsukia", "Udalguri", "West Karbi Anglong"],
+          "Bihar": ["Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"],
+          "Chandigarh": ["Chandigarh"],
+          "Chhattisgarh": ["Balod", "Baloda Bazar", "Balrampur", "Bastar", "Bemetara", "Bijapur", "Bilaspur", "Dantewada", "Dhamtari", "Durg", "Gariaband", "Gaurela-Pendra-Marwahi", "Janjgir-Champa", "Jashpur", "Kabirdham", "Kanker", "Kondagaon", "Korba", "Koriya", "Mahasamund", "Mungeli", "Narayanpur", "Raigarh", "Raipur", "Rajnandgaon", "Sukma", "Surajpur", "Surguja"],
+          "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Dadra and Nagar Haveli"],
+          "Delhi": ["Central Delhi", "East Delhi", "New Delhi", "North Delhi", "North East Delhi", "North West Delhi", "Shahdara", "South Delhi", "South East Delhi", "South West Delhi", "West Delhi"],
+          "Goa": ["North Goa", "South Goa"],
+          "Gujarat": ["Ahmedabad", "Amreli", "Anand", "Aravalli", "Banaskantha", "Bharuch", "Bhavnagar", "Botad", "Chhota Udaipur", "Dahod", "Dang", "Devbhoomi Dwarka", "Gandhinagar", "Gir Somnath", "Jamnagar", "Junagadh", "Kheda", "Kutch", "Mahisagar", "Mehsana", "Morbi", "Narmada", "Navsari", "Panchmahal", "Patan", "Porbandar", "Rajkot", "Sabarkantha", "Surat", "Surendranagar", "Tapi", "Vadodara", "Valsad"],
+          "Haryana": ["Ambala", "Bhiwani", "Charkhi Dadri", "Faridabad", "Fatehabad", "Gurugram", "Hisar", "Jhajjar", "Jind", "Kaithal", "Karnal", "Kurukshetra", "Mahendragarh", "Nuh", "Palwal", "Panchkula", "Panipat", "Rewari", "Rohtak", "Sirsa", "Sonipat", "Yamunanagar"],
+          "Himachal Pradesh": ["Bilaspur", "Chamba", "Hamirpur", "Kangra", "Kinnaur", "Kullu", "Lahaul and Spiti", "Mandi", "Shimla", "Sirmaur", "Solan", "Una"],
+          "Jammu and Kashmir": ["Anantnag", "Bandipora", "Baramulla", "Budgam", "Doda", "Ganderbal", "Jammu", "Kathua", "Kishtwar", "Kulgam", "Kupwara", "Poonch", "Pulwama", "Rajouri", "Ramban", "Reasi", "Samba", "Shopian", "Srinagar", "Udhampur"],
+          "Jharkhand": ["Bokaro", "Chatra", "Deoghar", "Dhanbad", "Dumka", "East Singhbhum", "Garhwa", "Giridih", "Godda", "Gumla", "Hazaribagh", "Jamtara", "Khunti", "Koderma", "Latehar", "Lohardaga", "Pakur", "Palamu", "Ramgarh", "Ranchi", "Sahebganj", "Seraikela Kharsawan", "Simdega", "West Singhbhum"],
+          "Karnataka": ["Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"],
+          "Kerala": ["Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode", "Malappuram", "Palakkad", "Pathanamthitta", "Thiruvananthapuram", "Thrissur", "Wayanad"],
+          "Ladakh": ["Kargil", "Leh"],
+          "Lakshadweep": ["Lakshadweep"],
+          "Madhya Pradesh": ["Agar Malwa", "Alirajpur", "Anuppur", "Ashoknagar", "Balaghat", "Barwani", "Betul", "Bhind", "Bhopal", "Burhanpur", "Chhatarpur", "Chhindwara", "Damoh", "Datia", "Dewas", "Dhar", "Dindori", "Guna", "Gwalior", "Harda", "Hoshangabad", "Indore", "Jabalpur", "Jhabua", "Katni", "Khandwa", "Khargone", "Mandla", "Mandsaur", "Morena", "Narsinghpur", "Neemuch", "Panna", "Raisen", "Rajgarh", "Ratlam", "Rewa", "Sagar", "Satna", "Sehore", "Seoni", "Shahdol", "Shajapur", "Sheopur", "Shivpuri", "Sidhi", "Singrauli", "Tikamgarh", "Ujjain", "Umaria", "Vidisha"],
+          "Maharashtra": ["Ahmednagar", "Akola", "Amravati", "Aurangabad", "Beed", "Bhandara", "Buldhana", "Chandrapur", "Dhule", "Gadchiroli", "Gondia", "Hingoli", "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur", "Nanded", "Nandurbar", "Nashik", "Osmanabad", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri", "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"],
+          "Manipur": ["Bishnupur", "Chandel", "Churachandpur", "Imphal East", "Imphal West", "Jiribam", "Kakching", "Kamjong", "Kangpokpi", "Noney", "Pherzawl", "Senapati", "Tamenglong", "Tengnoupal", "Thoubal", "Ukhrul"],
+          "Meghalaya": ["East Garo Hills", "East Jaintia Hills", "East Khasi Hills", "North Garo Hills", "Ri Bhoi", "South Garo Hills", "South West Garo Hills", "South West Khasi Hills", "West Garo Hills", "West Jaintia Hills", "West Khasi Hills"],
+          "Mizoram": ["Aizawl", "Champhai", "Hnahthial", "Khawzawl", "Kolasib", "Lawngtlai", "Lunglei", "Mamit", "Saiha", "Saitual", "Serchhip"],
+          "Nagaland": ["Dimapur", "Kiphire", "Kohima", "Longleng", "Mokokchung", "Mon", "Peren", "Phek", "Tuensang", "Wokha", "Zunheboto"],
+          "Odisha": ["Angul", "Balangir", "Balasore", "Bargarh", "Bhadrak", "Boudh", "Cuttack", "Deogarh", "Dhenkanal", "Gajapati", "Ganjam", "Jagatsinghpur", "Jajpur", "Jharsuguda", "Kalahandi", "Kandhamal", "Kendrapara", "Kendujhar", "Khordha", "Koraput", "Malkangiri", "Mayurbhanj", "Nabarangpur", "Nayagarh", "Nuapada", "Puri", "Rayagada", "Sambalpur", "Subarnapur", "Sundargarh"],
+          "Puducherry": ["Karaikal", "Mahe", "Puducherry", "Yanam"],
+          "Punjab": ["Amritsar", "Barnala", "Bathinda", "Faridkot", "Fatehgarh Sahib", "Fazilka", "Ferozepur", "Gurdaspur", "Hoshiarpur", "Jalandhar", "Kapurthala", "Ludhiana", "Mansa", "Moga", "Pathankot", "Patiala", "Rupnagar", "S.A.S. Nagar", "Sangrur", "Shahid Bhagat Singh Nagar", "Sri Muktsar Sahib", "Tarn Taran"],
+          "Rajasthan": ["Ajmer", "Alwar", "Banswara", "Baran", "Barmer", "Bharatpur", "Bhilwara", "Bikaner", "Bundi", "Chittorgarh", "Churu", "Dausa", "Dholpur", "Dungarpur", "Hanumangarh", "Jaipur", "Jaisalmer", "Jalore", "Jhalawar", "Jhunjhunu", "Jodhpur", "Karauli", "Kota", "Nagaur", "Pali", "Pratapgarh", "Rajsamand", "Sawai Madhopur", "Sikar", "Sirohi", "Sri Ganganagar", "Tonk", "Udaipur"],
+          "Sikkim": ["East Sikkim", "North Sikkim", "South Sikkim", "West Sikkim"],
+          "Tamil Nadu": ["Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"],
+          "Telangana": ["Adilabad", "Bhadradri Kothagudem", "Hyderabad", "Jagtial", "Jangaon", "Jayashankar Bhupalpally", "Jogulamba Gadwal", "Kamareddy", "Karimnagar", "Khammam", "Komaram Bheem", "Mahabubabad", "Mahabubnagar", "Mancherial", "Medak", "Medchal–Malkajgiri", "Mulugu", "Nagarkurnool", "Nalgonda", "Narayanpet", "Nirmal", "Nizamabad", "Peddapalli", "Rajanna Sircilla", "Ranga Reddy", "Sangareddy", "Siddipet", "Suryapet", "Vikarabad", "Wanaparthy", "Warangal Rural", "Warangal Urban", "Yadadri Bhuvanagiri"],
+          "Tripura": ["Dhalai", "Gomati", "Khowai", "North Tripura", "Sepahijala", "South Tripura", "Unakoti", "West Tripura"],
+          "Uttar Pradesh": ["Agra", "Aligarh", "Ambedkar Nagar", "Amethi", "Amroha", "Auraiya", "Ayodhya", "Azamgarh", "Baghpat", "Bahraich", "Ballia", "Balrampur", "Banda", "Barabanki", "Bareilly", "Basti", "Bhadohi", "Bijnor", "Budaun", "Bulandshahr", "Chandauli", "Chitrakoot", "Deoria", "Etah", "Etawah", "Farrukhabad", "Fatehpur", "Firozabad", "Gautam Buddh Nagar", "Ghaziabad", "Ghazipur", "Gonda", "Gorakhpur", "Hamirpur", "Hapur", "Hardoi", "Hathras", "Jalaun", "Jaunpur", "Jhansi", "Kannauj", "Kanpur Dehat", "Kanpur Nagar", "Kasganj", "Kaushambi", "Kheri", "Kushinagar", "Lalitpur", "Lucknow", "Maharajganj", "Mahoba", "Mainpuri", "Mathura", "Mau", "Meerut", "Mirzapur", "Moradabad", "Muzaffarnagar", "Pilibhit", "Pratapgarh", "Prayagraj", "Raebareli", "Rampur", "Saharanpur", "Sambhal", "Sant Kabir Nagar", "Shahjahanpur", "Shamli", "Shravasti", "Siddharthnagar", "Sitapur", "Sonbadra", "Sultanpur", "Unnao", "Varanasi"],
+          "Uttarakhand": ["Almora", "Bageshwar", "Chamoli", "Champawat", "Dehradun", "Haridwar", "Nainital", "Pauri Garhwal", "Pithoragarh", "Rudraprayag", "Tehri Garhwal", "Udham Singh Nagar", "Uttarkashi"],
+          "West Bengal": ["Alipurduar", "Bankura", "Birbhum", "Cooch Behar", "Dakshin Dinajpur", "Darjeeling", "Hooghly", "Howrah", "Jalpaiguri", "Jhargram", "Kalimpong", "Kolkata", "Malda", "Murshidabad", "Nadia", "North 24 Parganas", "Paschim Bardhaman", "Paschim Medinipur", "Purba Bardhaman", "Purba Medinipur", "Purulia", "South 24 Parganas", "Uttar Dinajpur"]
+        };
+
+        let imagePreviewData = null;
+        let map = null;
+        let markersLayer = null;
+        let priceChartInstance = null;
+
+        // --- IMPORTANT: API KEY ---
+        // Replace "YOUR_GOOGLE_AI_API_KEY" with your actual API key from Google AI Studio.
+        const apiKey = "AIzaSyDeN2yRmYZDpuLP69l5d4f2vzFZH3EZ4fw";
+
+        // Page Navigation
+        const pages = ['homePage', 'identifierPage', 'suggesterPage', 'mapPage', 'pricesPage'];
+        function navigateTo(pageId) {
+            pages.forEach(p => document.getElementById(p).classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+            if (pageId === 'mapPage') {
+                initializeMap();
+            }
+        }
+        
+        document.getElementById('goToIdentifier').addEventListener('click', () => navigateTo('identifierPage'));
+        document.getElementById('goToSuggester').addEventListener('click', () => navigateTo('suggesterPage'));
+        document.getElementById('goToPrices').addEventListener('click', () => navigateTo('pricesPage'));
+        document.getElementById('goToMap').addEventListener('click', () => navigateTo('mapPage'));
+        document.querySelectorAll('.backToHome').forEach(btn => btn.addEventListener('click', () => navigateTo('homePage')));
+
+        // Loading Spinner
+        const createSpinner = (message = "Analyzing plant health...") => `
+            <div class="flex justify-center items-center p-4">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-green-600"></div>
+                <p class="ml-4 text-lg text-gray-600">${message}</p>
+            </div>`;
+        
+        // --- Identifier Page Logic ---
+        const fileInput = document.getElementById('fileInput');
+        const imageUploadBox = document.getElementById('imageUploadBox');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const identifyDiseaseBtn = document.getElementById('identifyDiseaseBtn');
+        const identifierLoader = document.getElementById('identifierLoader');
+        const identifierResult = document.getElementById('identifierResult');
+        const identifierError = document.getElementById('identifierError');
+        
+        imageUploadBox.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    imagePreviewData = reader.result;
+                    imagePreview.src = imagePreviewData;
+                    imagePreview.classList.remove('hidden');
+                    uploadPlaceholder.classList.add('hidden');
+                    identifyDiseaseBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        identifyDiseaseBtn.addEventListener('click', async () => {
+            if (apiKey === "YOUR_GOOGLE_AI_API_KEY") {
+                 identifierError.textContent = "Please add your Google AI API key in the script section.";
+                 identifierError.classList.remove('hidden');
+                 return;
+            }
+            if (!imagePreviewData) {
+                identifierError.textContent = "Please upload an image first.";
+                identifierError.classList.remove('hidden');
+                return;
+            }
+
+            identifierError.classList.add('hidden');
+            identifierResult.classList.add('hidden');
+            identifierLoader.innerHTML = createSpinner('Analyzing...');
+            identifierLoader.classList.remove('hidden');
+            identifyDiseaseBtn.disabled = true;
+
+            const plantName = document.getElementById('plantName').value;
+            const issueDescription = document.getElementById('issueDescription').value;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const prompt = `
+              You are an expert agricultural botanist and plant pathologist.
+              Analyze the provided image of a plant, along with the user-provided details, to identify the most likely disease.
+              User Input:
+              - Plant Name: "${plantName || 'Not provided'}"
+              - Issue Description: "${issueDescription || 'Not provided'}"
+              Your response MUST be a single, minified JSON object with no extra text or markdown.
+              The JSON object must follow this exact schema:
+              {"disease": "Name of the identified disease","confidence": 98.5,"description": "A brief, one or two-sentence description of the disease.","cure": {"title": "Recommended Treatment","steps": ["First step of the cure.","Second step of the cure.","Third step, etc."]}}
+            `;
+
+            const payload = {
+              contents: [{
+                role: "user",
+                parts: [
+                  { text: prompt },
+                  { inlineData: { mimeType: "image/jpeg", data: imagePreviewData.split(',')[1] } }
+                ]
+              }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const result = await response.json();
+                let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text) throw new Error("Invalid response from API.");
+                
+                if (text.startsWith("```json")) {
+                    text = text.substring(7, text.length - 3);
+                }
+                
+                const analysis = JSON.parse(text);
+                
+                const cureStepsHtml = analysis.cure.steps.map(step => `
+                    <li class="flex items-start gap-3">
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mt-1 flex-shrink-0"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <span class="text-gray-600">${step}</span>
+                    </li>`).join('');
+
+                identifierResult.innerHTML = `
+                    <div class="animate-fade-in">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Analysis Complete</h2>
+                        <div class="bg-green-50/50 rounded-xl p-6 border border-green-200">
+                            <div class="text-center mb-6">
+                                <p class="text-lg text-gray-600">Identified Disease:</p>
+                                <h3 class="text-3xl font-bold text-green-800">${analysis.disease}</h3>
+                                <p class="text-sm font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full inline-block mt-2">
+                                    Confidence: ${analysis.confidence}%
+                                </p>
+                            </div>
+                            <p class="text-gray-700 mb-6 text-center">${analysis.description}</p>
+                            <div class="bg-white rounded-lg p-6 shadow-inner border">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    <h4 class="text-xl font-semibold text-gray-800">${analysis.cure.title}</h4>
+                                </div>
+                                <ul class="space-y-3">${cureStepsHtml}</ul>
+                            </div>
+                        </div>
+                    </div>`;
+                identifierResult.classList.remove('hidden');
+
+            } catch(err) {
+                console.error("API Call Failed:", err);
+                identifierError.textContent = "Failed to analyze image. Please try again.";
+                identifierError.classList.remove('hidden');
+            } finally {
+                identifierLoader.classList.add('hidden');
+                identifyDiseaseBtn.disabled = false;
+            }
+        });
+
+        // --- Suggester & Prices Page Logic ---
+        const suggesterStateSelect = document.getElementById('stateSelect');
+        const suggesterDistrictSelect = document.getElementById('districtSelect');
+        const pricesLocationSelector = document.getElementById('pricesLocationSelector');
+        
+        // Clone the location selectors for the prices page
+        pricesLocationSelector.innerHTML = suggesterStateSelect.parentElement.parentElement.parentElement.innerHTML;
+        const pricesStateSelect = pricesLocationSelector.querySelector('select');
+        pricesStateSelect.id = 'pricesStateSelect';
+        const pricesDistrictSelect = pricesLocationSelector.querySelectorAll('select')[1];
+        pricesDistrictSelect.id = 'pricesDistrictSelect';
+
+
+        const getSuggestionsBtn = document.getElementById('getSuggestionsBtn');
+        const suggesterLoader = document.getElementById('suggesterLoader');
+        const suggesterResult = document.getElementById('suggesterResult');
+        const suggesterError = document.getElementById('suggesterError');
+        
+        function populateStates(stateEl, districtEl) {
+            Object.keys(locations).forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateEl.appendChild(option);
+            });
+            stateEl.value = "Tamil Nadu";
+            populateDistricts(stateEl, districtEl);
+        }
+
+        function populateDistricts(stateEl, districtEl) {
+            const selectedState = stateEl.value;
+            districtEl.innerHTML = '';
+            locations[selectedState].forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtEl.appendChild(option);
+            });
+            if (locations[selectedState].includes("Coimbatore")) {
+                 districtEl.value = "Coimbatore";
+            } else {
+                 districtEl.value = locations[selectedState][0];
+            }
+        }
+
+        suggesterStateSelect.addEventListener('change', () => populateDistricts(suggesterStateSelect, suggesterDistrictSelect));
+        pricesStateSelect.addEventListener('change', () => populateDistricts(pricesStateSelect, pricesDistrictSelect));
+        
+        getSuggestionsBtn.addEventListener('click', async () => {
+             if (apiKey === "YOUR_GOOGLE_AI_API_KEY") {
+                 suggesterError.textContent = "Please add your Google AI API key in the script section.";
+                 suggesterError.classList.remove('hidden');
+                 return;
+            }
+            suggesterError.classList.add('hidden');
+            suggesterResult.classList.add('hidden');
+            suggesterLoader.innerHTML = createSpinner('Getting suggestions...');
+            suggesterLoader.classList.remove('hidden');
+            getSuggestionsBtn.disabled = true;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const fullLocation = `${suggesterDistrictSelect.value}, ${suggesterStateSelect.value}`;
+
+            const prompt = `
+              You are an expert agronomist. Based on the location (${fullLocation}, India), recommend 3 suitable crops.
+              Your response MUST be a single, minified JSON object.
+              Schema: {"location": "${fullLocation}","recommendations": [{"cropName": "Name", "reason": "Why it's suitable.", "plantingSeason": "Best time to plant."}]}
+            `;
+             const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const result = await response.json();
+                let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text) throw new Error("Invalid response from API.");
+                
+                if (text.startsWith("```json")) {
+                    text = text.substring(7, text.length - 3);
+                }
+                
+                const suggestions = JSON.parse(text);
+
+                const suggestionsHtml = suggestions.recommendations.map(crop => `
+                     <div class="bg-green-50/50 rounded-xl p-6 border border-green-200 text-left">
+                        <div class="flex items-center gap-3 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M21.7 10.3c.1-.8-.5-1.6-1.3-1.7l-4.5-.5c-.7-.1-1.3-.6-1.6-1.2L12.9 3c-.4-.9-1.5-.9-1.9 0l-1.4 4.1c-.3.6-.9 1.1-1.6 1.2l-4.5.5c-.8.1-1.4.9-1.3 1.7l1 4.5c.2.7.7 1.3 1.3 1.6l3.8 2.2c.6.4 1 1.1 1 1.8v4.2c0 .9.9 1.5 1.7 1.1l4-2.5c.6-.4 1-1.1 1-1.8v-3.7c0-.7.4-1.4 1-1.8l3.8-2.2c.6-.3 1.1-.9 1.3-1.6l1-4.5z"></path></svg>
+                            <h3 class="text-xl font-bold text-green-800">${crop.cropName}</h3>
+                        </div>
+                        <p class="text-gray-700 mb-3"><strong class="font-semibold text-gray-800">Why it's suitable:</strong> ${crop.reason}</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-gray-800">Best Planting Season:</strong> ${crop.plantingSeason}</p>
+                    </div>
+                `).join('');
+
+                suggesterResult.innerHTML = `
+                    <div class="animate-fade-in">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Top 3 Crop Suggestions for ${suggestions.location}</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">${suggestionsHtml}</div>
+                    </div>`;
+                suggesterResult.classList.remove('hidden');
+
+            } catch(err) {
+                 console.error("API Call Failed:", err);
+                suggesterError.textContent = "Failed to get suggestions. Please try again.";
+                suggesterError.classList.remove('hidden');
+            } finally {
+                suggesterLoader.classList.add('hidden');
+                getSuggestionsBtn.disabled = false;
+            }
+        });
+
+        // --- Price Page Logic ---
+        const getPricesBtn = document.getElementById('getPricesBtn');
+        const pricesLoader = document.getElementById('pricesLoader');
+        const pricesResult = document.getElementById('pricesResult');
+        const pricesError = document.getElementById('pricesError');
+        const pricesResultTitle = document.getElementById('pricesResultTitle');
+
+        getPricesBtn.addEventListener('click', async () => {
+            if (apiKey === "YOUR_GOOGLE_AI_API_KEY") {
+                 pricesError.textContent = "Please add your Google AI API key in the script section.";
+                 pricesError.classList.remove('hidden');
+                 return;
+            }
+            pricesError.classList.add('hidden');
+            pricesResult.classList.add('hidden');
+            pricesLoader.innerHTML = createSpinner('Getting market prices...');
+            pricesLoader.classList.remove('hidden');
+            getPricesBtn.disabled = true;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const fullLocation = `${pricesDistrictSelect.value}, ${pricesStateSelect.value}`;
+
+            const prompt = `
+              You are an agricultural market data analyst. Provide the current approximate market prices for 5 major crops in ${fullLocation}, India. The prices should be in INR per Quintal.
+              Your response MUST be a single, minified JSON object with no extra text or markdown.
+              Schema: {"location": "${fullLocation}", "prices": [{"cropName": "Name", "minPrice": 1500, "maxPrice": 2000, "modalPrice": 1750}]}
+            `;
+             const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const result = await response.json();
+                let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text) throw new Error("Invalid response from API.");
+                
+                if (text.startsWith("```json")) {
+                    text = text.substring(7, text.length - 3);
+                }
+                
+                const priceData = JSON.parse(text);
+                pricesResultTitle.textContent = `Market Prices in ${priceData.location}`;
+                renderPriceChart(priceData.prices);
+                pricesResult.classList.remove('hidden');
+
+            } catch(err) {
+                 console.error("API Call Failed:", err);
+                pricesError.textContent = "Failed to get crop prices. Please try again.";
+                pricesError.classList.remove('hidden');
+            } finally {
+                pricesLoader.classList.add('hidden');
+                getPricesBtn.disabled = false;
+            }
+        });
+
+        function renderPriceChart(priceData) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            if (priceChartInstance) {
+                priceChartInstance.destroy();
+            }
+
+            const labels = priceData.map(p => p.cropName);
+            const minPrices = priceData.map(p => p.minPrice);
+            const maxPrices = priceData.map(p => p.maxPrice);
+            const modalPrices = priceData.map(p => p.modalPrice);
+
+            priceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Min Price (INR)',
+                            data: minPrices,
+                            backgroundColor: 'rgba(255, 159, 64, 0.5)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Modal Price (INR)',
+                            data: modalPrices,
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                         {
+                            label: 'Max Price (INR)',
+                            data: maxPrices,
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Price per Quintal (INR)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ₹${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // --- Map Page Logic ---
+        const mapStatus = document.getElementById('mapStatus');
+        const mapSearchForm = document.getElementById('mapSearchForm');
+        const mapSearchInput = document.getElementById('mapSearchInput');
+
+        function initializeMap() {
+            if (map) { // If map already exists, just invalidate size
+                setTimeout(() => map.invalidateSize(), 0);
+                return; 
+            }
+
+            map = L.map('map').setView([20.5937, 78.9629], 5); // Default to India center
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="[https://www.openstreetmap.org/copyright](https://www.openstreetmap.org/copyright)">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            markersLayer = L.layerGroup().addTo(map);
+
+            // Get user's current location
+            mapStatus.textContent = "Getting your location...";
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const latLng = [latitude, longitude];
+                    map.setView(latLng, 13);
+                    fetchShops(latitude, longitude);
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    mapStatus.textContent = "Could not get location. Search manually.";
+                }
+            );
+        }
+
+        async function fetchShops(lat, lon) {
+            mapStatus.textContent = `Finding shops near you...`;
+            if (markersLayer) {
+                markersLayer.clearLayers();
+            }
+
+            const query = `
+                [out:json];
+                (
+                  node["shop"~"farm|garden_centre|agri"](around:10000, ${lat}, ${lon});
+                  way["shop"~"farm|garden_centre|agri"](around:10000, ${lat}, ${lon});
+                );
+                out center;
+            `;
+            const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.elements.length === 0) {
+                     mapStatus.textContent = "No nearby fertilizer shops found.";
+                     return;
+                }
+
+                const shopIcon = L.divIcon({
+                    html: `<div class="bg-green-600 p-2 rounded-full shadow-xl"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>`,
+                    className: '',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
+                data.elements.forEach(element => {
+                    const latlng = [element.lat || element.center.lat, element.lon || element.center.lon];
+                    const name = element.tags.name || "Unnamed Shop";
+                    const marker = L.marker(latlng, { icon: shopIcon }).addTo(markersLayer);
+                    marker.bindPopup(`<b>${name}</b>`);
+                });
+                mapStatus.textContent = `${data.elements.length} shops found.`;
+            } catch (error) {
+                console.error("Error fetching shops:", error);
+                mapStatus.textContent = "Could not fetch shop data.";
+            }
+        }
+
+        mapSearchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = mapSearchInput.value;
+            if (!query) return;
+
+            mapStatus.textContent = `Searching for "${query}"...`;
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", India")}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    const { lat, lon } = data[0];
+                    const latLng = [parseFloat(lat), parseFloat(lon)];
+                    map.setView(latLng, 13);
+                    fetchShops(lat, lon);
+                } else {
+                    mapStatus.textContent = `Location not found: "${query}"`;
+                }
+            } catch (error) {
+                console.error("Error searching location:", error);
+                mapStatus.textContent = "Failed to search for location.";
+            }
+        });
+
+
+        // --- Chatbot Logic ---
+        const chatbotContainer = document.getElementById('chatbotContainer');
+        const chatbotToggleBtn = document.getElementById('chatbotToggleBtn');
+        const closeChatbotBtn = document.getElementById('closeChatbotBtn');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatBody = document.getElementById('chatBody');
+        const chatSubmitBtn = document.getElementById('chatSubmitBtn');
+        const languageSelect = document.getElementById('languageSelect');
+
+        chatbotToggleBtn.addEventListener('click', () => {
+            chatbotContainer.classList.remove('hidden');
+            chatbotToggleBtn.classList.add('hidden');
+        });
+        closeChatbotBtn.addEventListener('click', () => {
+            chatbotContainer.classList.add('hidden');
+            chatbotToggleBtn.classList.remove('hidden');
+        });
+        
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+             if (apiKey === "YOUR_GOOGLE_AI_API_KEY") {
+                 appendMessage("Please add your Google AI API key in the script section to use the chatbot.", 'bot');
+                 return;
+            }
+            const userInput = chatInput.value.trim();
+            if (!userInput) return;
+
+            appendMessage(userInput, 'user');
+            chatInput.value = '';
+            chatSubmitBtn.disabled = true;
+            appendTypingIndicator();
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const language = languageSelect.value;
+            
+            const prompt = `You are 'Agri Doctor Assistant', a helpful AI chatbot. Answer user questions about farming in India. You MUST answer ONLY in: ${language}. User's question: "${userInput}"`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                 if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const result = await response.json();
+                const botResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                removeTypingIndicator();
+                appendMessage(botResponse || `Sorry, I couldn't get a response.`, 'bot');
+            } catch (err) {
+                 console.error("Chatbot API error:", err);
+                 removeTypingIndicator();
+                 appendMessage(`Sorry, an error occurred. Please try again.`, 'bot');
+            } finally {
+                chatSubmitBtn.disabled = false;
+            }
+        });
+
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `mb-3 flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+            messageDiv.innerHTML = `<div class="rounded-lg px-3 py-2 max-w-xs ${sender === 'user' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'}">${text}</div>`;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'mb-3 flex justify-start';
+            typingDiv.innerHTML = `<div class="bg-gray-200 text-gray-800 rounded-lg px-3 py-2"><span class="animate-pulse">...</span></div>`;
+            chatBody.appendChild(typingDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populateStates(suggesterStateSelect, suggesterDistrictSelect);
+            populateStates(pricesStateSelect, pricesDistrictSelect);
+        });
+
+    </script>
+</body>
+</html>
